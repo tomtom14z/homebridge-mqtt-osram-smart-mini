@@ -59,7 +59,8 @@ export class OsramSwitchAccessory {
       if (service.UUID === this.platform.Service.StatelessProgrammableSwitch.UUID) {
         // Vérifier si c'est un ancien service avec un mauvais nom
         const currentName = service.getCharacteristic(this.platform.Characteristic.Name).value as string;
-        if (currentName && !currentName.includes('↑') && !currentName.includes('↓') && !currentName.includes('⭕')) {
+        const validNames = ['Bouton Haut', 'Bouton Bas', 'Bouton Cercle'];
+        if (currentName && !validNames.includes(currentName)) {
           this.platform.log.info(`Suppression de l'ancien service: ${currentName}`);
           this.accessory.removeService(service);
         }
@@ -76,7 +77,7 @@ export class OsramSwitchAccessory {
     );
 
     // Créer 3 services de bouton (un pour chaque bouton physique)
-    const buttonNames = ['Flèche Haut ↑', 'Flèche Bas ↓', 'Cercle ⭕'];
+    const buttonNames = ['Bouton Haut', 'Bouton Bas', 'Bouton Cercle'];
     
     for (let i = 0; i < 3; i++) {
       let service = this.accessory.getServiceById(
