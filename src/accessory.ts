@@ -23,7 +23,6 @@ import { Zigbee2MqttOsramPlatform } from './platform';
 export class OsramSwitchAccessory {
   private services: Service[] = [];
   private batteryService: Service;
-  private serviceLabelService: Service;
   private baseTopic: string;
 
   // Mapping des actions vers les boutons et événements
@@ -54,7 +53,7 @@ export class OsramSwitchAccessory {
       .setCharacteristic(this.platform.Characteristic.Model, accessory.context.device.model || 'Smart+ Mini')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, accessory.context.device.ieee_address);
 
-    // Nettoyer les anciens services si nécessaire
+    // Nettoyer les anciens services si nécessaire (y compris ServiceLabel)
     this.accessory.services.forEach(service => {
       if (service.UUID === this.platform.Service.StatelessProgrammableSwitch.UUID) {
         // Vérifier si c'est un ancien service avec un mauvais nom
@@ -65,16 +64,12 @@ export class OsramSwitchAccessory {
           this.accessory.removeService(service);
         }
       }
+      // Supprimer le ServiceLabel s'il existe (il force les noms "Bouton 1, 2, 3")
+      if (service.UUID === this.platform.Service.ServiceLabel.UUID) {
+        this.platform.log.info('Suppression du ServiceLabel');
+        this.accessory.removeService(service);
+      }
     });
-
-    // Ajouter un ServiceLabel pour grouper les boutons ensemble
-    this.serviceLabelService = this.accessory.getService(this.platform.Service.ServiceLabel) ||
-      this.accessory.addService(this.platform.Service.ServiceLabel, accessory.displayName, 'buttons');
-    
-    this.serviceLabelService.setCharacteristic(
-      this.platform.Characteristic.ServiceLabelNamespace,
-      this.platform.Characteristic.ServiceLabelNamespace.ARABIC_NUMERALS,
-    );
 
     // Créer 3 services de bouton (un pour chaque bouton physique)
     const buttonNames = ['Bouton Haut', 'Bouton Bas', 'Bouton Cercle'];
@@ -103,12 +98,6 @@ export class OsramSwitchAccessory {
             this.platform.Characteristic.ProgrammableSwitchEvent.LONG_PRESS,
           ],
         });
-
-      // Configurer l'index du bouton pour le groupement
-      service.setCharacteristic(this.platform.Characteristic.ServiceLabelIndex, i + 1);
-      
-      // Lier ce bouton au ServiceLabel
-      service.addLinkedService(this.serviceLabelService);
 
       this.services.push(service);
     }
