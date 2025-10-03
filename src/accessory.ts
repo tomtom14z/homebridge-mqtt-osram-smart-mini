@@ -54,6 +54,18 @@ export class OsramSwitchAccessory {
       .setCharacteristic(this.platform.Characteristic.Model, accessory.context.device.model || 'Smart+ Mini')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, accessory.context.device.ieee_address);
 
+    // Nettoyer les anciens services si nécessaire
+    this.accessory.services.forEach(service => {
+      if (service.UUID === this.platform.Service.StatelessProgrammableSwitch.UUID) {
+        // Vérifier si c'est un ancien service avec un mauvais nom
+        const currentName = service.getCharacteristic(this.platform.Characteristic.Name).value as string;
+        if (currentName && !currentName.includes('↑') && !currentName.includes('↓') && !currentName.includes('⭕')) {
+          this.platform.log.info(`Suppression de l'ancien service: ${currentName}`);
+          this.accessory.removeService(service);
+        }
+      }
+    });
+
     // Ajouter un ServiceLabel pour grouper les boutons ensemble
     this.serviceLabelService = this.accessory.getService(this.platform.Service.ServiceLabel) ||
       this.accessory.addService(this.platform.Service.ServiceLabel, accessory.displayName, 'buttons');
