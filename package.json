@@ -1,0 +1,37 @@
+{
+  "name": "homebridge-mqtt-osram-smart-mini",
+  "displayName": "Homebridge MQTT Osram Smart+ Mini",
+  "version": "1.0.0",
+  "description": "Plugin Homebridge pour détecter automatiquement les télécommandes Osram Smart+ Mini via Zigbee2MQTT",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "zigbee2mqtt",
+    "osram",
+    "smart+",
+    "mqtt"
+  ],
+  "engines": {
+    "node": ">=14.0.0",
+    "homebridge": ">=1.3.0"
+  },
+  "author": "Thomas Vernouillet",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/votre-repo/homebridge-mqtt-osram-smart-mini.git"
+  },
+  "dependencies": {
+    "mqtt": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "homebridge": "^1.7.0",
+    "typescript": "^5.3.0"
+  }
+}

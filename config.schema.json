@@ -1,0 +1,44 @@
+{
+  "pluginAlias": "MqttOsramSmartMini",
+  "pluginType": "platform",
+  "singular": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Nom",
+        "type": "string",
+        "default": "Osram Smart+ Mini",
+        "required": true
+      },
+      "mqtt_url": {
+        "title": "URL MQTT",
+        "type": "string",
+        "default": "mqtt://localhost:1883",
+        "required": false,
+        "description": "URL du serveur MQTT (ex: mqtt://localhost:1883)"
+      },
+      "mqtt_username": {
+        "title": "Nom d'utilisateur MQTT",
+        "type": "string",
+        "required": false,
+        "description": "Nom d'utilisateur pour l'authentification MQTT"
+      },
+      "mqtt_password": {
+        "title": "Mot de passe MQTT",
+        "type": "string",
+        "required": false,
+        "description": "Mot de passe pour l'authentification MQTT"
+      },
+      "base_topic": {
+        "title": "Topic de base Zigbee2MQTT",
+        "type": "string",
+        "default": "zigbee2mqtt",
+        "required": false,
+        "description": "Topic de base configuré dans Zigbee2MQTT"
+      }
+    }
+  },
+  "form": null,
+  "display": null
+}

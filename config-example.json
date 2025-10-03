@@ -1,0 +1,12 @@
+{
+  "platforms": [
+    {
+      "platform": "MqttOsramSmartMini",
+      "name": "Osram Smart+ Mini",
+      "mqtt_url": "mqtt://localhost:1883",
+      "mqtt_username": "mqtt_user",
+      "mqtt_password": "VOTRE_MOT_DE_PASSE",
+      "base_topic": "zigbee2mqtt"
+    }
+  ]
+}
