@@ -23,6 +23,7 @@ import { Zigbee2MqttOsramPlatform } from './platform';
 export class OsramSwitchAccessory {
   private services: Service[] = [];
   private batteryService: Service;
+  private serviceLabelService: Service;
   private baseTopic: string;
 
   // Mapping des actions vers les boutons et événements
@@ -53,11 +54,19 @@ export class OsramSwitchAccessory {
       .setCharacteristic(this.platform.Characteristic.Model, accessory.context.device.model || 'Smart+ Mini')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, accessory.context.device.ieee_address);
 
+    // Ajouter un ServiceLabel pour grouper les boutons ensemble
+    this.serviceLabelService = this.accessory.getService(this.platform.Service.ServiceLabel) ||
+      this.accessory.addService(this.platform.Service.ServiceLabel, accessory.displayName, 'buttons');
+    
+    this.serviceLabelService.setCharacteristic(
+      this.platform.Characteristic.ServiceLabelNamespace,
+      this.platform.Characteristic.ServiceLabelNamespace.ARABIC_NUMERALS,
+    );
+
     // Créer 3 services de bouton (un pour chaque bouton physique)
+    const buttonNames = ['Haut', 'Bas', 'Cercle'];
+    
     for (let i = 0; i < 3; i++) {
-      const buttonNames = ['Flèche Haut', 'Flèche Bas', 'Cercle'];
-      const serviceName = `${accessory.displayName} ${buttonNames[i]}`;
-      
       let service = this.accessory.getServiceById(
         this.platform.Service.StatelessProgrammableSwitch,
         `button${i}`,
@@ -66,12 +75,12 @@ export class OsramSwitchAccessory {
       if (!service) {
         service = this.accessory.addService(
           this.platform.Service.StatelessProgrammableSwitch,
-          serviceName,
+          buttonNames[i],
           `button${i}`,
         );
       }
 
-      service.setCharacteristic(this.platform.Characteristic.Name, serviceName);
+      service.setCharacteristic(this.platform.Characteristic.Name, buttonNames[i]);
       
       // Configurer les valeurs valides: SINGLE_PRESS (0) et LONG_PRESS (2)
       service.getCharacteristic(this.platform.Characteristic.ProgrammableSwitchEvent)
@@ -82,8 +91,11 @@ export class OsramSwitchAccessory {
           ],
         });
 
-      // Configurer l'index du bouton
+      // Configurer l'index du bouton pour le groupement
       service.setCharacteristic(this.platform.Characteristic.ServiceLabelIndex, i + 1);
+      
+      // Lier ce bouton au ServiceLabel
+      service.addLinkedService(this.serviceLabelService);
 
       this.services.push(service);
     }
