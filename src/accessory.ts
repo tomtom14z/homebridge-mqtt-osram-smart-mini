@@ -64,7 +64,7 @@ export class OsramSwitchAccessory {
     );
 
     // Créer 3 services de bouton (un pour chaque bouton physique)
-    const buttonNames = ['Haut', 'Bas', 'Cercle'];
+    const buttonNames = ['Flèche Haut ↑', 'Flèche Bas ↓', 'Cercle ⭕'];
     
     for (let i = 0; i < 3; i++) {
       let service = this.accessory.getServiceById(
