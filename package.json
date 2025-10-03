@@ -24,8 +24,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/votre-repo/homebridge-mqtt-osram-smart-mini.git"
+    "url": "git+https://github.com/tomtom14z/homebridge-mqtt-osram-smart-mini.git"
   },
+  "bugs": {
+    "url": "https://github.com/tomtom14z/homebridge-mqtt-osram-smart-mini/issues"
+  },
+  "homepage": "https://github.com/tomtom14z/homebridge-mqtt-osram-smart-mini#readme",
   "dependencies": {
     "mqtt": "^5.3.0"
   },
