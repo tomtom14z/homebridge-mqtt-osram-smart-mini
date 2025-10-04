@@ -59,40 +59,34 @@ export class OsramSwitchAccessory {
       .setCharacteristic(this.platform.Characteristic.Model, accessory.context.device.model || 'Smart+ Mini')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, accessory.context.device.ieee_address);
 
-    // Nettoyer les anciens services si nécessaire (y compris ServiceLabel)
+    // Supprimer TOUS les anciens services de boutons pour garantir l'ordre
+    const servicesToRemove: Service[] = [];
     this.accessory.services.forEach(service => {
       if (service.UUID === this.platform.Service.StatelessProgrammableSwitch.UUID) {
-        // Vérifier si c'est un ancien service avec un mauvais nom
-        const currentName = service.getCharacteristic(this.platform.Characteristic.Name).value as string;
-        const validNames = ['Bouton Haut', 'Bouton Bas', 'Bouton Cercle'];
-        if (currentName && !validNames.includes(currentName)) {
-          this.platform.log.info(`Suppression de l'ancien service: ${currentName}`);
-          this.accessory.removeService(service);
-        }
+        servicesToRemove.push(service);
       }
-      // Supprimer le ServiceLabel s'il existe (il force les noms "Bouton 1, 2, 3")
+      // Supprimer le ServiceLabel s'il existe
       if (service.UUID === this.platform.Service.ServiceLabel.UUID) {
-        this.platform.log.info('Suppression du ServiceLabel');
-        this.accessory.removeService(service);
+        servicesToRemove.push(service);
       }
     });
+    
+    servicesToRemove.forEach(service => {
+      this.platform.log.debug(`[${accessory.displayName}] Suppression du service pour recréation`);
+      this.accessory.removeService(service);
+    });
 
-    // Créer 3 services de bouton (un pour chaque bouton physique)
+    // Créer 3 services de bouton DANS L'ORDRE pour garantir l'affichage correct
+    // L'ordre de création détermine l'ordre d'affichage dans HomeKit
     const buttonNames = ['Bouton Haut', 'Bouton Bas', 'Bouton Cercle'];
     
     for (let i = 0; i < 3; i++) {
-      let service = this.accessory.getServiceById(
+      // Toujours créer un nouveau service pour garantir l'ordre
+      const service = this.accessory.addService(
         this.platform.Service.StatelessProgrammableSwitch,
+        buttonNames[i],
         `button${i}`,
       );
-
-      if (!service) {
-        service = this.accessory.addService(
-          this.platform.Service.StatelessProgrammableSwitch,
-          buttonNames[i],
-          `button${i}`,
-        );
-      }
 
       service.setCharacteristic(this.platform.Characteristic.Name, buttonNames[i]);
       
@@ -107,6 +101,8 @@ export class OsramSwitchAccessory {
 
       this.services.push(service);
     }
+    
+    this.platform.log.info(`[${accessory.displayName}] Services créés: Bouton 1=${buttonNames[0]}, Bouton 2=${buttonNames[1]}, Bouton 3=${buttonNames[2]}`);
 
     // Service de batterie
     this.batteryService = this.accessory.getService(this.platform.Service.Battery) ||
