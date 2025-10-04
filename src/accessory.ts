@@ -24,6 +24,8 @@ export class OsramSwitchAccessory {
   private services: Service[] = [];
   private batteryService: Service;
   private baseTopic: string;
+  private lastActionTime: { [key: string]: number } = {};
+  private debounceDelay: number;
 
   // Mapping des actions vers les boutons et événements
   private readonly ACTION_MAPPING = {
@@ -46,6 +48,8 @@ export class OsramSwitchAccessory {
     private readonly mqttClient: MqttClient,
   ) {
     this.baseTopic = this.platform.config.base_topic || 'zigbee2mqtt';
+    // Délai de debounce en millisecondes (par défaut 500ms)
+    this.debounceDelay = this.platform.config.debounce_delay || 500;
     
     // Configuration des informations de l'accessoire
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
@@ -157,6 +161,22 @@ export class OsramSwitchAccessory {
     const buttonNames = ['Haut', 'Bas', 'Cercle'];
     
     if (mapping) {
+      // Vérifier le debounce : ignorer si la même action a été déclenchée récemment
+      const now = Date.now();
+      const lastTime = this.lastActionTime[action] || 0;
+      const timeSinceLastAction = now - lastTime;
+      
+      if (timeSinceLastAction < this.debounceDelay) {
+        this.platform.log.debug(
+          `[${deviceName}] Action ignorée (debounce): ${action} ` +
+          `(${timeSinceLastAction}ms depuis la dernière)`,
+        );
+        return;
+      }
+      
+      // Enregistrer le timestamp de cette action
+      this.lastActionTime[action] = now;
+      
       const eventType = mapping.event === 0 ? 'appui court' : 'appui long';
       this.platform.log.info(
         `[${deviceName}] Bouton ${buttonNames[mapping.button]} - ${eventType} (${action})`,

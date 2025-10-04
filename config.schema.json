@@ -36,6 +36,15 @@
         "default": "zigbee2mqtt",
         "required": false,
         "description": "Topic de base configuré dans Zigbee2MQTT"
+      },
+      "debounce_delay": {
+        "title": "Délai de debounce (ms)",
+        "type": "number",
+        "default": 500,
+        "required": false,
+        "minimum": 0,
+        "maximum": 5000,
+        "description": "Délai en millisecondes pour ignorer les déclenchements multiples d'un même bouton (défaut: 500ms)"
       }
     }
   },

@@ -70,7 +70,8 @@ Ajoutez la configuration suivante dans votre fichier `config.json` de Homebridge
       "mqtt_url": "mqtt://localhost:1883",
       "mqtt_username": "mqtt_user",
       "mqtt_password": "votre_mot_de_passe",
-      "base_topic": "zigbee2mqtt"
+      "base_topic": "zigbee2mqtt",
+      "debounce_delay": 500
     }
   ]
 }
@@ -86,6 +87,7 @@ Ajoutez la configuration suivante dans votre fichier `config.json` de Homebridge
 | `mqtt_username` | string | ❌ | - | Nom d'utilisateur MQTT |
 | `mqtt_password` | string | ❌ | - | Mot de passe MQTT |
 | `base_topic` | string | ❌ | `zigbee2mqtt` | Topic de base Zigbee2MQTT |
+| `debounce_delay` | number | ❌ | `500` | Délai en ms pour éviter les déclenchements multiples (0-5000) |
 
 ## Utilisation dans HomeKit
 

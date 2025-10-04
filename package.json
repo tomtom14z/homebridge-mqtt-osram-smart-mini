@@ -1,7 +1,7 @@
 {
   "name": "homebridge-mqtt-osram-smart-mini",
   "displayName": "Homebridge MQTT Osram Smart+ Mini",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Plugin Homebridge pour détecter automatiquement les télécommandes Osram Smart+ Mini via Zigbee2MQTT",
   "main": "dist/index.js",
   "scripts": {
