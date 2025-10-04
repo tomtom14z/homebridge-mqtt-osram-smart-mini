@@ -25,7 +25,9 @@ export class OsramSwitchAccessory {
   private batteryService: Service;
   private baseTopic: string;
   private lastActionTime: { [key: string]: number } = {};
+  private lastBatteryUpdate: number = 0;
   private debounceDelay: number;
+  private messageHandler?: (topic: string, message: Buffer) => void;
 
   // Mapping des actions vers les boutons et événements
   private readonly ACTION_MAPPING = {
@@ -128,11 +130,16 @@ export class OsramSwitchAccessory {
       }
     });
 
-    this.mqttClient.on('message', (receivedTopic, message) => {
+    // Créer le handler une seule fois et le stocker
+    this.messageHandler = (receivedTopic: string, message: Buffer) => {
       if (receivedTopic === topic) {
         this.handleMessage(message);
       }
-    });
+    };
+
+    // S'assurer de ne pas avoir de listeners multiples
+    this.mqttClient.removeListener('message', this.messageHandler);
+    this.mqttClient.on('message', this.messageHandler);
   }
 
   private handleMessage(message: Buffer) {
@@ -194,6 +201,20 @@ export class OsramSwitchAccessory {
 
   private updateBattery(batteryLevel: number) {
     const deviceName = this.accessory.context.device.friendly_name;
+    
+    // Appliquer le debounce aussi sur la batterie
+    const now = Date.now();
+    const timeSinceLastUpdate = now - this.lastBatteryUpdate;
+    
+    if (timeSinceLastUpdate < this.debounceDelay) {
+      this.platform.log.debug(
+        `[${deviceName}] Mise à jour batterie ignorée (debounce): ${timeSinceLastUpdate}ms`,
+      );
+      return;
+    }
+    
+    this.lastBatteryUpdate = now;
+    
     this.platform.log.info(`[${deviceName}] Batterie: ${batteryLevel}%`);
     
     this.batteryService.updateCharacteristic(
