@@ -114,12 +114,13 @@ export class OsramSwitchAccessory {
 
   private subscribeMqtt() {
     const topic = `${this.baseTopic}/${this.accessory.context.device.friendly_name}`;
+    const deviceName = this.accessory.context.device.friendly_name;
     
     this.mqttClient.subscribe(topic, (err) => {
       if (err) {
-        this.platform.log.error(`Erreur d'abonnement au topic ${topic}:`, err);
+        this.platform.log.error(`[${deviceName}] Erreur d'abonnement au topic ${topic}:`, err);
       } else {
-        this.platform.log.debug(`Abonné au topic: ${topic}`);
+        this.platform.log.info(`[${deviceName}] Abonné au topic MQTT`);
       }
     });
 
@@ -131,6 +132,8 @@ export class OsramSwitchAccessory {
   }
 
   private handleMessage(message: Buffer) {
+    const deviceName = this.accessory.context.device.friendly_name;
+    
     try {
       const data = JSON.parse(message.toString());
       
@@ -144,17 +147,19 @@ export class OsramSwitchAccessory {
         this.updateBattery(data.battery);
       }
     } catch (err) {
-      this.platform.log.error('Erreur lors du parsing du message MQTT:', err);
+      this.platform.log.error(`[${deviceName}] Erreur lors du parsing du message MQTT:`, err);
     }
   }
 
   private handleAction(action: string) {
+    const deviceName = this.accessory.context.device.friendly_name;
     const mapping = this.ACTION_MAPPING[action as keyof typeof this.ACTION_MAPPING];
+    const buttonNames = ['Haut', 'Bas', 'Cercle'];
     
     if (mapping) {
+      const eventType = mapping.event === 0 ? 'appui court' : 'appui long';
       this.platform.log.info(
-        `Action détectée: ${action} → Bouton ${mapping.button + 1}, ` +
-        `Événement: ${mapping.event === 0 ? 'SINGLE_PRESS' : 'LONG_PRESS'}`,
+        `[${deviceName}] Bouton ${buttonNames[mapping.button]} - ${eventType} (${action})`,
       );
 
       const service = this.services[mapping.button];
@@ -163,12 +168,13 @@ export class OsramSwitchAccessory {
           .updateValue(mapping.event);
       }
     } else {
-      this.platform.log.debug(`Action non mappée: ${action}`);
+      this.platform.log.debug(`[${deviceName}] Action non mappée: ${action}`);
     }
   }
 
   private updateBattery(batteryLevel: number) {
-    this.platform.log.debug(`Mise à jour du niveau de batterie: ${batteryLevel}%`);
+    const deviceName = this.accessory.context.device.friendly_name;
+    this.platform.log.info(`[${deviceName}] Batterie: ${batteryLevel}%`);
     
     this.batteryService.updateCharacteristic(
       this.platform.Characteristic.BatteryLevel,
@@ -184,5 +190,9 @@ export class OsramSwitchAccessory {
       this.platform.Characteristic.StatusLowBattery,
       lowBattery,
     );
+    
+    if (batteryLevel < 20) {
+      this.platform.log.warn(`[${deviceName}] ⚠️ Batterie faible: ${batteryLevel}%`);
+    }
   }
 }
